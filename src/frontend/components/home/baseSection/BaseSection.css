@@ -1,0 +1,41 @@
+.linearfade {
+  height: 100px;
+  width: 100%;
+  background: rgb(40, 44, 53);
+  background: linear-gradient(
+    0deg,
+    rgb(13, 13, 14) -100%,
+   black 100%
+  );
+}
+a {
+  text-decoration: none;
+  color: #c0c0c5;
+}
+a:hover{
+  color: white;
+  transition: ease-in-out 0.15s;
+
+}
+footer {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+
+  padding: 30px 100px;
+}
+footer p {
+  color: #c0c0c5;
+}
+
+footer ul li {
+  transition: ease-in-out 0.15s;
+  color: #c0c0c5;
+  font-size: 12px;
+  list-style: none;
+  padding: 4px 0px;
+  cursor: pointer;
+}
+footer ul li:hover {
+  color: white;
+}

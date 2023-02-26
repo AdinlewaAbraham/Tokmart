@@ -1,0 +1,31 @@
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: black;
+  color: white;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+.oneHunpx{
+  margin: 0px 100px;
+}
+.progress-bar{
+  padding: 0;
+  background-color: white;
+  border-radius: 5px;
+  height: 10px;
+}
+.progress-bar-inner{
+  background-color: red;
+  height: 10px;
+  border-radius: 5px;
+}
+
+
