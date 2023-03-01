@@ -8,101 +8,110 @@ import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "hardhat/console.sol";
 
 contract Marketplace is ReentrancyGuard {
-
     // Variables
     address payable public immutable feeAccount; // the account that receives fees
-    uint public immutable feePercent; // the fee percentage on sales 
-    uint public itemCount; 
+    uint256 public immutable feePercent; // the fee percentage on sales
+    uint256 public itemCount;
 
     struct Item {
-        uint itemId;
+        uint256 itemId;
         IERC721 nft;
-        uint tokenId;
-        uint price;
+        uint256 tokenId;
+        uint256 price;
         address payable seller;
         bool sold;
+        address owner;
     }
 
     // itemId -> Item
-    mapping(uint => Item) public items;
+    mapping(uint256 => Item) public items;
 
     event Offered(
-        uint itemId,
+        uint256 itemId,
         address indexed nft,
-        uint tokenId,
-        uint price,
+        uint256 tokenId,
+        uint256 price,
         address indexed seller
     );
     event Bought(
-        uint itemId,
+        uint256 itemId,
         address indexed nft,
-        uint tokenId,
-        uint price,
+        uint256 tokenId,
+        uint256 price,
         address indexed seller,
-        address indexed buyer
+        address indexed buyer,
+        address owner
     );
-    event PriceUpdated(
-        uint itemId,
-        uint price,
-        address indexed seller
-    );
+    event PriceUpdated(uint256 itemId, uint256 price, address indexed seller);
 
-    constructor(uint _feePercent) {
+    constructor(uint256 _feePercent) {
         feeAccount = payable(msg.sender);
         feePercent = _feePercent;
     }
 
     // Make item to offer on the marketplace
-    function makeItem(IERC721 _nft, uint _tokenId, uint _price) external nonReentrant {
+    function makeItem(
+        IERC721 _nft,
+        uint256 _tokenId,
+        uint256 _price
+    ) external nonReentrant {
         require(_price > 0, "Price must be greater than zero");
         // increment itemCount
-        itemCount ++;
+        itemCount++;
         // transfer nft
         _nft.transferFrom(msg.sender, address(this), _tokenId);
         // add new item to items mapping
-        items[itemCount] = Item (
+        items[itemCount] = Item(
             itemCount,
             _nft,
             _tokenId,
             _price,
             payable(msg.sender),
-            false
-        );
-        // emit Offered event
-        emit Offered(
-            itemCount,
-            address(_nft),
-            _tokenId,
-            _price,
+            false,
             msg.sender
         );
+        // emit Offered event
+        emit Offered(itemCount, address(_nft), _tokenId, _price, msg.sender);
     }
-    function updatePrice(uint _itemId, uint _newPrice) external nonReentrant {
-    Item storage item = items[_itemId];
-    //require(item.seller == msg.sender, "only seller can update price");
-    require(!item.sold, "item already sold");
-    require(_newPrice > 0, "Price must be greater than zero");
-    item.price = _newPrice;
-    emit Offered(
-        item.itemId,
-        address(item.nft),
-        item.tokenId,
-        item.price,
-        item.seller
-    );
-}
 
-    function purchaseItem(uint _itemId) external payable nonReentrant {
-        uint _totalPrice = getTotalPrice(_itemId);
+    function updatePrice(uint256 _itemId, uint256 _newPrice)
+        external
+        nonReentrant
+    {
         Item storage item = items[_itemId];
         require(_itemId > 0 && _itemId <= itemCount, "item doesn't exist");
-        require(msg.value >= _totalPrice, "not enough ether to cover item price and market fee");
         require(!item.sold, "item already sold");
+        require(_newPrice > 0, "Price must be greater than zero");
+        require(item.owner == msg.sender, "Only item owner can relist");
+        item.price = _newPrice;
+        emit Offered(
+            item.itemId,
+            address(item.nft),
+            item.tokenId,
+            item.price,
+            item.seller
+        );
+    }
+
+    function purchaseItem(uint256 _itemId) external payable nonReentrant {
+        uint256 _totalPrice = getTotalPrice(_itemId);
+        Item storage item = items[_itemId];
+        require(_itemId > 0 && _itemId <= itemCount, "item doesn't exist");
+        require(
+            msg.value >= _totalPrice,
+            "not enough ether to cover item price and market fee"
+        );
+        require(!item.sold, "item already sold");
+
         // pay seller and feeAccount
         item.seller.transfer(item.price);
         feeAccount.transfer(_totalPrice - item.price);
+
         // update item to sold
         item.sold = true;
+
+        // transfer ownership to buyer
+        item.owner = msg.sender;
         // transfer nft to buyer
         item.nft.transferFrom(address(this), msg.sender, item.tokenId);
         // emit Bought event
@@ -112,20 +121,27 @@ contract Marketplace is ReentrancyGuard {
             item.tokenId,
             item.price,
             item.seller,
-            msg.sender
+            msg.sender,
+            item.owner
         );
     }
 
     // Relist an already listed item with a new price
-    function relistItem(uint _itemId, uint _newPrice) external nonReentrant {
+    function relistItem(uint256 _itemId, uint256 _newPrice)
+        external
+        nonReentrant
+    {
         Item storage item = items[_itemId];
-        //require(msg.sender == item.seller, "Only the seller can relist the item");
-        require(!item.sold, "Item already sold");
+        require(_itemId > 0 && _itemId <= itemCount, "item doesn't exist");
+        require(item.sold, "Item not sold");
         require(_newPrice > 0, "Price must be greater than zero");
+        require(item.owner == msg.sender, "Only item owner can relist");
         // Update item price
         item.price = _newPrice;
         // update item to sold
         item.sold = false;
+        // transfer nft
+        item.nft.transferFrom(msg.sender, address(this), item.tokenId);
         // Emit Offered event with new price
         emit Offered(
             _itemId,
@@ -135,7 +151,18 @@ contract Marketplace is ReentrancyGuard {
             msg.sender
         );
     }
-    function getTotalPrice(uint _itemId) view public returns(uint){
-        return((items[_itemId].price*(100 + feePercent))/100);
+
+    function getTotalPrice(uint256 _itemId) public view returns (uint256) {
+        return ((items[_itemId].price * (100 + feePercent)) / 100);
+    }
+
+    function isItemSold(uint256 _itemId) external view returns (bool) {
+        require(_itemId > 0 && _itemId <= itemCount, "Item doesn't exist");
+        return items[_itemId].sold;
+    }
+
+    function getItemOwner(uint256 _itemId) external view returns (address) {
+        require(_itemId > 0 && _itemId <= itemCount, "Item doesn't exist");
+        return items[_itemId].owner;
     }
 }

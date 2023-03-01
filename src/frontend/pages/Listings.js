@@ -3,6 +3,7 @@ import { ethers } from "ethers";
 import { Row, Col, Card } from "react-bootstrap";
 import Loading from "../components/loading/Loading";
 import "../components/home/topSection/Topsection.css";
+//import useListedItems from "../../hooks/useListedItems"
 
 function renderSoldItems(items) {
   return (
@@ -39,9 +40,11 @@ export default function MyListedItems({ marketplace, nft, account }) {
   useEffect(() => {
     document.title = "Listings";
   }, []);
+
   const [loading, setLoading] = useState(true);
   const [listedItems, setListedItems] = useState([]);
   const [soldItems, setSoldItems] = useState([]);
+  const [showInput, setshowInput] = useState(false);
   const loadListedItems = async () => {
     // Load all sold items that the user listed
     const itemCount = await marketplace.itemCount();
@@ -92,13 +95,12 @@ export default function MyListedItems({ marketplace, nft, account }) {
         <Loading />
       </main>
     );
-  const updatePrice = async () => {
-    let price = 0.5;
-    const id = await nft.tokenCount();
+  const updatePrice = async (item) => {
+    let price = 0.01;
     await (await nft.setApprovalForAll(marketplace.address, true)).wait();
     const listingPrice = ethers.utils.parseEther(price.toString());
-    await (await marketplace.updatePrice(id, listingPrice)).wait();
-    console.log("relist suc");
+    await (await marketplace.updatePrice(item.itemId, listingPrice)).wait();
+    console.log("updated price suc");
   };
   return (
     <div className="flex justify-center">
@@ -121,11 +123,23 @@ export default function MyListedItems({ marketplace, nft, account }) {
                   </p>
                   <button
                     onClick={() => {
-                      updatePrice();
+                      setshowInput(!showInput);
                     }}
                   >
-                    update price
+                    change price
                   </button>
+                  {showInput && (
+                    <>
+                      <input placeholder="Enter new price" />
+                      <button
+                        onClick={() => {
+                          updatePrice(item);
+                        }}
+                      >
+                        update price
+                      </button>
+                    </>
+                  )}
                 </Card>
               </Col>
             ))}

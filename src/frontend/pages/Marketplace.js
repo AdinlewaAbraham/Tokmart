@@ -1,52 +1,24 @@
 import { useState, useEffect } from "react";
 import { ethers } from "ethers";
 import { Row, Col, Card, Button } from "react-bootstrap";
-import Loading from "../components/loading/Loading"
+import Loading from "../components/loading/Loading";
 import "../components/home/topSection/Topsection.css";
 
+import { useLoadMarketplaceItems } from "../../hooks/useLoadMarketplaceItems";
 const Home = ({ marketplace, nft }) => {
-  
+  const [loading, items] = useLoadMarketplaceItems(marketplace, nft);
+
   useEffect(() => {
     document.title = "Marketplace";
   }, []);
-  const [loading, setLoading] = useState(true);
-  const [items, setItems] = useState([]);
-  const loadMarketplaceItems = async () => {
-    const itemCount = await marketplace.itemCount();
-    let items = [];
-    for (let i = 1; i <= itemCount; i++) {
-      const item = await marketplace.items(i);
-      if (!item.sold) {
-        const uri = await nft.tokenURI(item.tokenId);
-        const response = await fetch(uri);
-        const metadata = await response.json();
-        const totalPrice = await marketplace.getTotalPrice(item.itemId);
-        items.push({
-          totalPrice,
-          itemId: item.itemId,
-          seller: item.seller,
-          name: metadata.name,
-          description: metadata.description,
-          image: metadata.image,
-        });
-      }
-    }
-    setLoading(false);
-    setItems(items);
-  };
 
-  const buyMarketItem = async (item) => {
-    console.log(item.itemId)
+  const BuyMarketItem = async (item) => {
     await (
       await marketplace.purchaseItem(item.itemId, { value: item.totalPrice })
-
     ).wait();
-    loadMarketplaceItems();
+    useLoadMarketplaceItems();
   };
 
-  useEffect(() => {
-    loadMarketplaceItems();
-  }, []);
   if (loading)
     return (
       <main
@@ -58,7 +30,7 @@ const Home = ({ marketplace, nft }) => {
         }}
         className="center-spinner"
       >
-        <Loading/>
+        <Loading />
       </main>
     );
   return (
@@ -76,17 +48,19 @@ const Home = ({ marketplace, nft }) => {
                   />
                   <Card.Body color="secondary">
                     <Card.Title>{item.name}</Card.Title>
-                    <Card.Text style={{color:"grey"}}>{item.description}</Card.Text>
+                    <Card.Text style={{ color: "grey" }}>
+                      {item.description}
+                    </Card.Text>
                   </Card.Body>
-                  <Card.Footer style={{padding:'0px'}}>
+                  <Card.Footer style={{ padding: "0px" }}>
                     <div className="d-grid">
                       <Button
-                        onClick={() => buyMarketItem(item)}
+                        onClick={() => BuyMarketItem(item)}
                         variant="primary"
                         size="lg"
                         style={{ backgroundColor: "#34a343", border: "none" }}
                       >
-                        Buy for {ethers.utils.formatEther(item.totalPrice)} ETH 
+                        Buy for {ethers.utils.formatEther(item.totalPrice)} ETH
                       </Button>
                     </div>
                   </Card.Footer>
@@ -97,7 +71,9 @@ const Home = ({ marketplace, nft }) => {
         </div>
       ) : (
         <main style={{ padding: "1rem 0" }}>
-          <h2 style={{marginLeft:"50px",marginRight:"50px"}}>No listed assets</h2>
+          <h2 style={{ marginLeft: "50px", marginRight: "50px" }}>
+            No listed assets
+          </h2>
         </main>
       )}
     </div>

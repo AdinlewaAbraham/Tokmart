@@ -6,7 +6,7 @@ module.exports = {
     goerli: {
       url: "https://eth-goerli.g.alchemy.com/v2/fTNPemna1uNKbWTBBSjLpARvXtrpS2MY",
       accounts: [
-        "24b0f568023726edc55da5272794d65d97b32d2af5fc52251b865ad755601863",
+        "c151d69465019938b74ed94b6192e97b84e93e8a04480f5aab132a65c10e5665",
       ],
       hardhat: {
         chainId: 1337

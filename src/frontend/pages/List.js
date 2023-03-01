@@ -3,7 +3,6 @@ import { ethers } from "ethers";
 import { Row, Form, Button } from "react-bootstrap";
 import { Buffer } from "buffer";
 import "../components/App.css"
-import useContracts from "../../hooks/useContracts";
 
 const ipfsClient = require("ipfs-http-client");
 const projectId = process.env.REACT_APP_IPFS_PROJECT_ID;
@@ -20,13 +19,8 @@ const client = ipfsClient.create({
   },
 });
 
-const Create = () => {
-const { nft, marketplace } = useContracts();
+const Create = ({ nft, marketplace }) => {
   useEffect( async() => {
-    console.log(nft.address)
-    const id = await nft.tokenCount();
-    console.log(id)
-    console.log(nft)
     document.title = "List";
   }, []);
   const [image, setImage] = useState("");

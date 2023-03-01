@@ -39,7 +39,7 @@ function App() {
               />
               <Route
                 path="/list"
-                element={<List/>}
+                element={<List marketplace={marketplace} nft={nft} />}
               />
               <Route
                 path="/listings"
