@@ -14,18 +14,18 @@ const usePurchasedItems = ({ marketplace, nft, account }) => {
         null,
         account
       );
-      //check if sold 
+      //check if sold
       const results = await marketplace.queryFilter(filter);
-      const purchases = await Promise.all(
+      const uniquePurchases = new Set();
+      await Promise.all(
         results.map(async (i) => {
           i = i.args;
           const uri = await nft.tokenURI(i.tokenId);
           const response = await fetch(uri);
           const metadata = await response.json();
           const totalPrice = await marketplace.getTotalPrice(i.itemId);
-          console.log(marketplace)
-          const itemSold = await marketplace.isItemSold(i.itemId)
-          const owner = await marketplace.getItemOwner(i.itemId)
+          const itemSold = await marketplace.isItemSold(i.itemId);
+          const owner = await marketplace.getItemOwner(i.itemId);
           let purchasedItem = {
             totalPrice,
             price: i.price,
@@ -36,15 +36,27 @@ const usePurchasedItems = ({ marketplace, nft, account }) => {
             itemSold,
             owner,
           };
-          return purchasedItem;
+          uniquePurchases.add(JSON.stringify(purchasedItem));
         })
       );
+      const uniquePurchasesArray = removeDuplicates(
+        Array.from(uniquePurchases).map((p) => JSON.parse(p))
+      );
+
       setLoading(false);
-      setPurchases(purchases);
-      console.log(purchases)
+      setPurchases(uniquePurchasesArray);
     };
     loadPurchasedItems();
   }, [marketplace, nft, account]);
+
+  const removeDuplicates = (arr) => {
+    const seen = new Set();
+    return arr.filter((item) => {
+      const duplicate = seen.has(item.itemId.toString());
+      seen.add(item.itemId.toString());
+      return !duplicate;
+    });
+  };
 
   return { loading, purchases };
 };

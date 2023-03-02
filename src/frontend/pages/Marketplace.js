@@ -4,9 +4,9 @@ import { Row, Col, Card, Button } from "react-bootstrap";
 import Loading from "../components/loading/Loading";
 import "../components/home/topSection/Topsection.css";
 
-import { useLoadMarketplaceItems } from "../../hooks/useLoadMarketplaceItems";
+import { useLoadMarketplaceItems } from "../hooks/useLoadMarketplaceItems";
 const Home = ({ marketplace, nft }) => {
-  const [loading, items] = useLoadMarketplaceItems(marketplace, nft);
+  const [loading, items, setItems] = useLoadMarketplaceItems(marketplace, nft);
 
   useEffect(() => {
     document.title = "Marketplace";
@@ -16,7 +16,8 @@ const Home = ({ marketplace, nft }) => {
     await (
       await marketplace.purchaseItem(item.itemId, { value: item.totalPrice })
     ).wait();
-    useLoadMarketplaceItems();
+    const newItems = items.filter((i) => i.itemId !== item.itemId);
+    setItems(newItems);
   };
 
   if (loading)
@@ -47,7 +48,15 @@ const Home = ({ marketplace, nft }) => {
                     style={{ borderRadius: "10px" }}
                   />
                   <Card.Body color="secondary">
-                    <Card.Title>{item.name}</Card.Title>
+                    <Card.Title>
+                      {item.name}
+                      <span>
+                        {" "}
+                        #
+                        {ethers.utils.formatEther(item.itemId) *
+                          Math.pow(10, 18)}
+                      </span>
+                    </Card.Title>
                     <Card.Text style={{ color: "grey" }}>
                       {item.description}
                     </Card.Text>

@@ -41,8 +41,6 @@ const Create = ({ nft, marketplace }) => {
         const buffer = await client.add(file, {
           progress: (prog) => {
             const progressPercentage = (prog / fileSize) * 100;
-            setProgress(progressPercentage);
-            console.log(progressPercentage);
           },
         });
         setImage(`https://tokmart-nft.infura-ipfs.io/ipfs/${buffer.path}`);

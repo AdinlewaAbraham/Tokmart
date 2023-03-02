@@ -5,9 +5,10 @@ import List from "../pages/List.js";
 import Listings from "../pages/Listings.js";
 import Purchases from "../pages/Purchases.js";
 import Landing from "../pages/Home.js";
+import Sold from "../pages/Sold";
 
 import "./App.css";
-import useContracts from "../../hooks/useContracts.js";
+import useContracts from "../hooks/useContracts.js";
 function App() {
   const { loading, account, nft, marketplace } = useContracts();
   return (
@@ -45,6 +46,16 @@ function App() {
                 path="/listings"
                 element={
                   <Listings
+                    marketplace={marketplace}
+                    nft={nft}
+                    account={account}
+                  />
+                }
+              />
+              <Route
+                path="/sold"
+                element={
+                  <Sold
                     marketplace={marketplace}
                     nft={nft}
                     account={account}

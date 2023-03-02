@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { ethers } from 'ethers';
-import MarketplaceAddress from '../frontend/contractsData/Marketplace-address.json';
-import MarketplaceAbi from "../frontend/contractsData/Marketplace.json"
-import NFTAddress from "../frontend/contractsData/NFT-address.json";
-import NFTAbi from "../frontend/contractsData/NFT.json";
+import MarketplaceAddress from '../../frontend/contractsData/Marketplace-address.json';
+import MarketplaceAbi from "../../frontend/contractsData/Marketplace.json"
+import NFTAddress from "../../frontend/contractsData/NFT-address.json";
+import NFTAbi from "../../frontend/contractsData/NFT.json";
+
 
 const useContracts = () => {
     const [loading, setLoading] = useState(true);

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+
 export function useLoadMarketplaceItems(marketplace, nft) {
   const [loading, setLoading] = useState(true);
   const [items, setItems] = useState([]);
@@ -38,6 +39,5 @@ export function useLoadMarketplaceItems(marketplace, nft) {
     fetchMarketplaceItems();
   }, [marketplace, nft]);
 
-  return [loading, items];
+  return [loading, items, setItems];
 }
-//export default useMarketplaceItems;

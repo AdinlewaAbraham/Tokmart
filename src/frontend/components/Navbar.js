@@ -16,16 +16,19 @@ const Navigation = ({ web3Handler, account }) => {
             </Nav.Link>
           <Nav className="me-auto navbar-nav marginAuto">
             <Nav.Link as={Link} to="/marketplace" className="nav-link">
-              Marketplace
+              marketplace
             </Nav.Link>
             <Nav.Link as={Link} to="/list" className="nav-link">
               list
             </Nav.Link>
             <Nav.Link as={Link} to="/listings" className="nav-link">
-            Listings
+            listings
+            </Nav.Link>
+            <Nav.Link as={Link} to="/sold" className="nav-link">
+            sold
             </Nav.Link>
             <Nav.Link as={Link} to="/purchases" className="nav-link">
-            Purchases
+            purchases
             </Nav.Link>
           </Nav>
           <Nav className="navbar-nav">
