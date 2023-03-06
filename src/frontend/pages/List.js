@@ -29,18 +29,17 @@ const Create = ({ nft, marketplace }) => {
   const [description, setDescription] = useState("");
 
   const [progress, setProgress] = useState(0);
-
   const uploadToIPFS = async (event) => {
     event.preventDefault();
     setProgress(0);
     const file = event.target.files[0];
     if (typeof file !== "undefined") {
-      const fileSize = file.size;
+      const fileSize = file.size * 1024; // Convert to bytes
       try {
         const buffer = await client.add(file, {
           progress: (prog) => {
             const progressPercentage = (prog / fileSize) * 100;
-            setProgress(progressPercentage)
+            setProgress(progressPercentage);
           },
         });
         setImage(`https://tokmart-nft.infura-ipfs.io/ipfs/${buffer.path}`);
@@ -49,6 +48,7 @@ const Create = ({ nft, marketplace }) => {
       }
     }
   };
+  
   const [isformedfilled, setisformedfilled] = useState(false);
   const createNFT = async () => {
     if (!image || !price || !name || !description) {
