@@ -53,9 +53,7 @@ const Create = ({ nft, marketplace }) => {
   const createNFT = async () => {
     if (!image || !price || !name || !description) {
       setisformedfilled(true);
-      console.log(" rejected");
     } else {
-      console.log("not rejected");
       try {
         const result = await client.add(
           JSON.stringify({ image, price, name, description })
