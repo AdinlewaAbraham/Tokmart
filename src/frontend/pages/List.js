@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { ethers } from "ethers";
 import { Row, Form, Button } from "react-bootstrap";
 import { Buffer } from "buffer";
-import "../components/App.css"
+import "../components/App.css";
+import { Navigate } from "react-router";
 const ipfsClient = require("ipfs-http-client");
 const projectId = process.env.REACT_APP_IPFS_PROJECT_ID;
 const projectSecret = process.env.REACT_APP_IPFS_PROJECT_SECRET;
@@ -19,7 +20,7 @@ const client = ipfsClient.create({
 });
 
 const Create = ({ nft, marketplace }) => {
-  useEffect( async() => {
+  useEffect(async () => {
     document.title = "List";
   }, []);
   const [image, setImage] = useState("");
@@ -33,22 +34,18 @@ const Create = ({ nft, marketplace }) => {
     setProgress(0);
     const file = event.target.files[0];
     if (typeof file !== "undefined") {
-      const fileSize = file.size * 1024; // Convert to bytes
-      try {
-        const result = await client.add(file);
-        const buffer = await client.add(file, {
-          progress: (prog) => {
-            const progressPercentage = (prog / fileSize) * 100;
-            setProgress(progressPercentage);
-          },
-        });
-        setImage(`https://tokmart-nft.infura-ipfs.io/ipfs/${result.path}`);
-      } catch (error) {
-        console.log("ipfs image upload error: ", error);
-      }
+      const fileSize = file.size * 1024;
+      const result = await client.add(file);
+      const buffer = await client.add(file, {
+        progress: (prog) => {
+          const progressPercentage = (prog / fileSize) * 100;
+          setProgress(progressPercentage);
+        },
+      });
+      setImage(`https://tokmart-nft.infura-ipfs.io/ipfs/${result.path}`);
     }
   };
-  
+
   const [isformedfilled, setisformedfilled] = useState(false);
   const createNFT = async () => {
     if (!image || !price || !name || !description) {
@@ -71,6 +68,7 @@ const Create = ({ nft, marketplace }) => {
     await (await nft.setApprovalForAll(marketplace.address, true)).wait();
     const listingPrice = ethers.utils.parseEther(price.toString());
     await (await marketplace.makeItem(nft.address, id, listingPrice)).wait();
+    Navigate("/marketplace")
   };
 
   return (
@@ -89,21 +87,23 @@ const Create = ({ nft, marketplace }) => {
                 name="file"
                 onChange={uploadToIPFS}
               />
-             
-                  {progress > 0 && (
-                    <>
-                      <div className="progress-bar">
-                        <div
-                          className="progress-bar-inner"
-                          style={{
-                            width: `${progress * 1024}%`,
-                          }}
-                        />
-                      </div>
-                      <p className="text-center">Uploading.... {progress.toFixed(2) * 1000}%</p>
-                    </>
-                  )}
-                
+
+              {progress > 0 && (
+                <>
+                  <div className="progress-bar">
+                    <div
+                      className="progress-bar-inner"
+                      style={{
+                        width: `${progress * 1024}%`,
+                      }}
+                    />
+                  </div>
+                  <p className="text-center">
+                    Uploading.... {progress.toFixed(2) * 1000}%
+                  </p>
+                </>
+              )}
+
               {image && (
                 <img
                   style={{ width: "200px" }}
