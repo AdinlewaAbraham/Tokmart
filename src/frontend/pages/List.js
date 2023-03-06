@@ -3,7 +3,6 @@ import { ethers } from "ethers";
 import { Row, Form, Button } from "react-bootstrap";
 import { Buffer } from "buffer";
 import "../components/App.css"
-
 const ipfsClient = require("ipfs-http-client");
 const projectId = process.env.REACT_APP_IPFS_PROJECT_ID;
 const projectSecret = process.env.REACT_APP_IPFS_PROJECT_SECRET;
@@ -36,13 +35,14 @@ const Create = ({ nft, marketplace }) => {
     if (typeof file !== "undefined") {
       const fileSize = file.size * 1024; // Convert to bytes
       try {
+        const result = await client.add(file);
         const buffer = await client.add(file, {
           progress: (prog) => {
             const progressPercentage = (prog / fileSize) * 100;
             setProgress(progressPercentage);
           },
         });
-        setImage(`https://tokmart-nft.infura-ipfs.io/ipfs/${buffer.path}`);
+        setImage(`https://tokmart-nft.infura-ipfs.io/ipfs/${result.path}`);
       } catch (error) {
         console.log("ipfs image upload error: ", error);
       }
