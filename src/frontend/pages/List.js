@@ -36,11 +36,11 @@ const Create = ({ nft, marketplace }) => {
     const file = event.target.files[0];
     if (typeof file !== "undefined") {
       const fileSize = file.size;
-      console.log("File size:", fileSize);
       try {
         const buffer = await client.add(file, {
           progress: (prog) => {
             const progressPercentage = (prog / fileSize) * 100;
+            setProgress(progressPercentage)
           },
         });
         setImage(`https://tokmart-nft.infura-ipfs.io/ipfs/${buffer.path}`);
@@ -102,7 +102,7 @@ const Create = ({ nft, marketplace }) => {
                           }}
                         />
                       </div>
-                      <p>Uploading.... {progress.toFixed(2)}%</p>
+                      <p className="text-center">Uploading.... {progress.toFixed(2)}%</p>
                     </>
                   )}
                 
