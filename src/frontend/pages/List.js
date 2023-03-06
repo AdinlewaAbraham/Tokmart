@@ -96,11 +96,11 @@ const Create = ({ nft, marketplace }) => {
                         <div
                           className="progress-bar-inner"
                           style={{
-                            width: `${progress}%`,
+                            width: `${progress * 1024}%`,
                           }}
                         />
                       </div>
-                      <p className="text-center">Uploading.... {progress.toFixed(2)}%</p>
+                      <p className="text-center">Uploading.... {progress.toFixed(2) * 1000}%</p>
                     </>
                   )}
                 
