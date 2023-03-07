@@ -18,6 +18,7 @@ const usePurchasedItems = ({ marketplace, nft, account }) => {
       );
       const results = await marketplace.queryFilter(filter);
 
+
       // Use a Set to ensure unique purchases and prevent duplicates
       const uniquePurchases = new Set();
 

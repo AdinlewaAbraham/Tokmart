@@ -45,7 +45,7 @@ const Marketplace = ({ marketplace, nft }) => {
         <div className="px-5 container">
           <Row xs={1} md={2} lg={4} className="g-4 py-5">
             {items.map((item, idx) => (
-              <Col key={idx} className="overflow-hidden" onClick={()=>{console.log(item)}}>
+              <Col key={idx} className="overflow-hidden">
                 <Card style={{ backgroundColor: "black", border: "none" }}>
                   <Card.Img
                     variant="top"

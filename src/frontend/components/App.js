@@ -1,16 +1,38 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { useState, useEffect } from "react";
 import Navigation from "./Navbar";
 import Marketplace from "../pages/Marketplace.js";
 import List from "../pages/List.js";
 import Listings from "../pages/Listings.js";
 import Purchases from "../pages/Purchases.js";
 import Landing from "../pages/Home.js";
-import Sold from "../pages/Sold";
 
 import "./App.css";
 import useContracts from "../hooks/useContracts.js";
+
 function App() {
   const { loading, account, nft, marketplace } = useContracts();
+
+  const [accountChanged, setAccountChanged] = useState(false);
+
+  useEffect(() => {
+    const handleAccountsChanged = (accounts) => {
+      setAccountChanged(true);
+    };
+
+    window.ethereum.on("accountsChanged", handleAccountsChanged);
+
+    return () => {
+      window.ethereum.off("accountsChanged", handleAccountsChanged);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (accountChanged) {
+      window.location.reload();
+    }
+  }, [accountChanged]);
+
   return (
     <BrowserRouter>
       <div className="App">
@@ -50,12 +72,6 @@ function App() {
                     nft={nft}
                     account={account}
                   />
-                }
-              />
-              <Route
-                path="/sold"
-                element={
-                  <Sold marketplace={marketplace} nft={nft} account={account} />
                 }
               />
               <Route

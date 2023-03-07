@@ -24,14 +24,15 @@ export function useLoadMarketplaceItems(marketplace, nft) {
         const response = await fetch(uri);
         const metadata = await response.json();
         const totalPrice = await marketplace.getTotalPrice(item.itemId);
+        const owner = await marketplace.getItemOwner(item.itemId)
 
         const formattedItem = {
           totalPrice,
           itemId: item.itemId,
-          seller: item.seller,
           name: metadata.name,
           description: metadata.description,
           image: metadata.image,
+          owner: owner
         };
 
         items.push(formattedItem);

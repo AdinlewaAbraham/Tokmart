@@ -154,6 +154,7 @@ const List = ({ nft, marketplace }) => {
                 size="lg"
                 required
                 type="number"
+                min={0}
                 placeholder="Price in ETH"
               />
               {isFormValid && (

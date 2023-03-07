@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router";
 import { ethers } from "ethers";
 import { Row, Col, Card, Form, Button } from "react-bootstrap";
 import Loading from "../components/loading/Loading";
@@ -12,16 +13,35 @@ export default function Purchases({ marketplace, nft, account }) {
     account,
   });
 
-  // Set the page title on initial load.
+  
+  const [accountChanged, setAccountChanged] = useState(false);
+
   useEffect(() => {
+  // Set the page title on initial load.
     document.title = "Purchases";
+    const handleAccountsChanged = (accounts) => {
+      setAccountChanged(true);
+    };
+
+    window.ethereum.on("accountsChanged", handleAccountsChanged);
+
+    return () => {
+      window.ethereum.off("accountsChanged", handleAccountsChanged);
+    };
   }, []);
+
+  useEffect(() => {
+    if (accountChanged) {
+      window.location.reload();
+    }
+  }, [accountChanged]);
 
   // State variables for relisting items.
   const [error, setError] = useState(false);
   const [newPrice, setNewPrice] = useState();
   const [showRelist, setShowRelist] = useState(false);
 
+  const navigate = useNavigate();
   const relistItem = async (item) => {
     if (newPrice == null || newPrice <= 0) {
       setError(true);
@@ -35,6 +55,7 @@ export default function Purchases({ marketplace, nft, account }) {
     const listingPrice = ethers.utils.parseEther(newPrice.toString());
     await (await marketplace.relistItem(item.itemId, listingPrice)).wait();
 
+    navigate("/marketplace", { replace: true });
   };
 
   // Render a loading spinner while the purchased items are loading.
@@ -56,7 +77,10 @@ export default function Purchases({ marketplace, nft, account }) {
           <Row xs={1} md={2} lg={4} className="g-4 py-5">
             {purchases.map((item, idx) => {
               return (
-                <Col key={idx} className="overflow-hidden" onClick={()=>{console.log(item)}} >
+                <Col
+                  key={idx}
+                  className="overflow-hidden"
+                >
                   <Card className="artnftcardtwo">
                     <Card.Img
                       className="artnftcardimg"
@@ -85,15 +109,25 @@ export default function Purchases({ marketplace, nft, account }) {
                       variant="primary"
                       size="lg"
                       style={{
-                        backgroundColor: "#34a343",
+                        backgroundColor:
+                          account.toLowerCase() === item.owner.toLowerCase() &&
+                          item.itemSold
+                            ? "#34a343"
+                            : "grey",
                         border: "none",
-                        display:
-                          account.toLowerCase() === item.owner.toLowerCase()
-                            ? "block"
-                            : "none",
+                        cursor:
+                          account.toLowerCase() === item.owner.toLowerCase() &&
+                          item.itemSold
+                            ? " pointer"
+                            : "no-drop",
                       }}
                       onClick={() => {
-                        setShowRelist(!showRelist);
+                        if (
+                          account.toLowerCase() === item.owner.toLowerCase() &&
+                          item.itemSold
+                        ) {
+                          setShowRelist(!showRelist);
+                        }
                       }}
                     >
                       relist

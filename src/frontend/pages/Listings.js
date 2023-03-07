@@ -27,7 +27,7 @@ const Listings = ({ marketplace, nft, account }) => {
     for (let index = 1; index <= itemCount; index++) {
       const item = await marketplace.items(index);
       // Check if the item was listed by the current user
-      if (item.seller.toLowerCase() === account) {
+      if (item.owner.toLowerCase() === account) {
         // Get the URI for the NFT
         const uri = await nft.tokenURI(item.tokenId);
         // Fetch the metadata for the NFT from IPFS using the URI
