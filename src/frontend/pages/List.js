@@ -3,64 +3,80 @@ import { ethers } from "ethers";
 import { Row, Form, Button } from "react-bootstrap";
 import { Buffer } from "buffer";
 import "../components/App.css";
-import { Navigate } from "react-router";
+import { useNavigate } from "react-router";
 const ipfsClient = require("ipfs-http-client");
-const projectId = process.env.REACT_APP_IPFS_PROJECT_ID;
-const projectSecret = process.env.REACT_APP_IPFS_PROJECT_SECRET;
-const auth =
-  "Basic " + Buffer.from(projectId + ":" + projectSecret).toString("base64");
 
-const client = ipfsClient.create({
+// IPFS authentication details
+const IPFS_PROJECT_ID = process.env.REACT_APP_IPFS_PROJECT_ID;
+const IPFS_PROJECT_SECRET = process.env.REACT_APP_IPFS_PROJECT_SECRET;
+const IPFS_AUTH =
+  "Basic " + Buffer.from(IPFS_PROJECT_ID + ":" + IPFS_PROJECT_SECRET).toString("base64");
+
+// IPFS client configuration
+const IPFS_CLIENT = ipfsClient.create({
   host: "ipfs.infura.io",
   port: 5001,
   protocol: "https",
   headers: {
-    authorization: auth,
+    authorization: IPFS_AUTH,
   },
 });
 
-const Create = ({ nft, marketplace }) => {
+const List = ({ nft, marketplace }) => {
+  // Set the page title on component mount
   useEffect(async () => {
     document.title = "List";
   }, []);
-  const [image, setImage] = useState("");
+
+  // Form state variables
+  const [imageURL, setImageURL] = useState("");
   const [price, setPrice] = useState(null);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
 
-  const [progress, setProgress] = useState(0);
+  // File upload progress state variable
+  const [uploadProgress, setUploadProgress] = useState(0);
+
+  // Upload selected file to IPFS
   const uploadToIPFS = async (event) => {
     event.preventDefault();
-    setProgress(0);
+    setUploadProgress(0);
     const file = event.target.files[0];
     if (typeof file !== "undefined") {
       const fileSize = file.size * 1024;
-      const result = await client.add(file);
-      const buffer = await client.add(file, {
+      const result = await IPFS_CLIENT.add(file);
+      const buffer = await IPFS_CLIENT.add(file, {
         progress: (prog) => {
           const progressPercentage = (prog / fileSize) * 100;
-          setProgress(progressPercentage);
+          setUploadProgress(progressPercentage);
         },
       });
-      setImage(`https://tokmart-nft.infura-ipfs.io/ipfs/${result.path}`);
+      setImageURL(`https://tokmart-nft.infura-ipfs.io/ipfs/${result.path}`);
     }
   };
 
-  const [isformedfilled, setisformedfilled] = useState(false);
+  // Form validation state variable
+  const [isFormValid, setIsFormValid] = useState(false);
+
+  // Create NFT and list it for sale
   const createNFT = async () => {
-    if (!image || !price || !name || !description) {
-      setisformedfilled(true);
+    if (!imageURL || !price || !name || !description) {
+      setIsFormValid(true);
     } else {
       try {
-        const result = await client.add(
-          JSON.stringify({ image, price, name, description })
+        const result = await IPFS_CLIENT.add(
+          JSON.stringify({ image: imageURL, price, name, description })
         );
         mintThenList(result);
       } catch (error) {
-        console.log("ipfs uri upload error: ", error);
+        console.error("IPFS URI upload error: ", error);
       }
     }
   };
+
+  const navigate = useNavigate();
+
+  // Mint new NFT and list it for sale on marketplace
   const mintThenList = async (result) => {
     const uri = `https://tokmart-nft.infura-ipfs.io/ipfs/${result.path}`;
     await (await nft.mint(uri)).wait();
@@ -68,9 +84,8 @@ const Create = ({ nft, marketplace }) => {
     await (await nft.setApprovalForAll(marketplace.address, true)).wait();
     const listingPrice = ethers.utils.parseEther(price.toString());
     await (await marketplace.makeItem(nft.address, id, listingPrice)).wait();
-    Navigate("/marketplace")
+    navigate("/marketplace", { replace: true });
   };
-
   return (
     <div className="container-fluid mt-5">
       <div className="row">
@@ -88,33 +103,33 @@ const Create = ({ nft, marketplace }) => {
                 onChange={uploadToIPFS}
               />
 
-              {progress > 0 && (
+              {uploadProgress > 0 && (
                 <>
                   <div className="progress-bar">
                     <div
                       className="progress-bar-inner"
                       style={{
-                        width: `${progress * 1024}%`,
+                        width: `${uploadProgress * 1024}%`,
                       }}
                     />
                   </div>
                   <p className="text-center">
-                    Uploading.... {progress.toFixed(2) * 1000}%
+                    Uploading.... {uploadProgress.toFixed(2) * 1000}%
                   </p>
                 </>
               )}
 
-              {image && (
+              {imageURL && (
                 <img
                   style={{ width: "200px" }}
-                  src={image}
+                  src={imageURL}
                   alt="Uploaded Image"
                 />
               )}
               <Form.Control
                 onChange={(e) => {
                   setName(e.target.value);
-                  setisformedfilled(false);
+                  setIsFormValid(false);
                 }}
                 size="lg"
                 required
@@ -124,7 +139,7 @@ const Create = ({ nft, marketplace }) => {
               <Form.Control
                 onChange={(e) => {
                   setDescription(e.target.value);
-                  setisformedfilled(false);
+                  setIsFormValid(false);
                 }}
                 size="lg"
                 required
@@ -134,14 +149,14 @@ const Create = ({ nft, marketplace }) => {
               <Form.Control
                 onChange={(e) => {
                   setPrice(e.target.value);
-                  setisformedfilled(false);
+                  setIsFormValid(false);
                 }}
                 size="lg"
                 required
                 type="number"
                 placeholder="Price in ETH"
               />
-              {isformedfilled && (
+              {isFormValid && (
                 <p style={{ color: "red" }}>
                   Please fill all form fields. Thank you.
                 </p>
@@ -167,4 +182,4 @@ const Create = ({ nft, marketplace }) => {
   );
 };
 
-export default Create;
+export default List;

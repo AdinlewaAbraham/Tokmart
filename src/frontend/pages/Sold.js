@@ -5,50 +5,55 @@ import { Row, Col, Card } from "react-bootstrap";
 import Loading from "../components/loading/Loading";
 
 const Sold = ({ marketplace, nft, account }) => {
-  useEffect(() => {
-    document.title = "Sold";
-  }, []);
-  const [loading, setLoading] = useState(true);
-  const [listedItems, setListedItems] = useState([]);
+  // State variables
+  const [isLoading, setIsLoading] = useState(true);
   const [soldItems, setSoldItems] = useState([]);
+
+  // Load listed items and sold items from the marketplace for the current user
   const loadListedItems = async () => {
     // Load all sold items that the user listed
     const itemCount = await marketplace.itemCount();
-    let listedItems = [];
     let soldItems = [];
-    for (let indx = 1; indx <= itemCount; indx++) {
-      const i = await marketplace.items(indx);
-      if (i.seller.toLowerCase() === account) {
+
+    for (let index = 1; index <= itemCount; index++) {
+      const item = await marketplace.items(index);
+
+      if (item.seller.toLowerCase() === account) {
         // get uri url from nft contract
-        const uri = await nft.tokenURI(i.tokenId);
+        const uri = await nft.tokenURI(item.tokenId);
         // use uri to fetch the nft metadata stored on ipfs
         const response = await fetch(uri);
         const metadata = await response.json();
         // get total price of item (item price + fee)
-        const totalPrice = await marketplace.getTotalPrice(i.itemId);
+        const totalPrice = await marketplace.getTotalPrice(item.itemId);
         // define listed item object
-        let item = {
+        const soldItem = {
           totalPrice,
-          price: i.price,
-          itemId: i.itemId,
+          price: item.price,
+          itemId: item.itemId,
           name: metadata.name,
           description: metadata.description,
           image: metadata.image,
-          sold: i.sold,
+          sold: item.sold,
         };
-        listedItems.push(item);
+
         // Add listed item to sold items array if sold
-        if (i.sold) soldItems.push(item);
+        if (item.sold) {
+          soldItems.push(soldItem);
+        }
       }
     }
-    setLoading(false);
-    setListedItems(listedItems);
+
+    setIsLoading(false);
     setSoldItems(soldItems);
   };
+
+  // Load listed items and sold items when the component mounts
   useEffect(() => {
     loadListedItems();
   }, []);
-  if (loading)
+
+  if (isLoading)
     return (
       <main
         style={{
@@ -62,7 +67,6 @@ const Sold = ({ marketplace, nft, account }) => {
         <Loading />
       </main>
     );
-            console.log(soldItems)
   return (
     <>
       {soldItems.length > 0 ? (
@@ -71,15 +75,18 @@ const Sold = ({ marketplace, nft, account }) => {
             <Col key={idx} className="overflow-hidden">
               <Card className="artnftcard">
                 <Card.Img
-                  style={{ borderRadius: "10px" }}
+                  style={{
+                    borderRadius: "10px",
+                    height: "200px",
+                    objectFit: "cover",
+                  }}
                   variant="top"
                   src={item.image}
                 />
                 <span>
-                      {" "}
-                      #
-                      {ethers.utils.formatEther(item.itemId) * Math.pow(10, 18)}
-                    </span>
+                  {" "}
+                  #{ethers.utils.formatEther(item.itemId) * Math.pow(10, 18)}
+                </span>
                 <Card.Footer>
                   <span style={{ color: "grey", fontSize: "13px" }}>
                     Sold for:

@@ -5,14 +5,18 @@ import Loading from "../components/loading/Loading";
 import "../components/home/topSection/Topsection.css";
 
 import { useLoadMarketplaceItems } from "../hooks/useLoadMarketplaceItems";
-const Home = ({ marketplace, nft }) => {
+
+const Marketplace = ({ marketplace, nft }) => {
+  // Load marketplace items using custom hook
   const [loading, items, setItems] = useLoadMarketplaceItems(marketplace, nft);
 
   useEffect(() => {
+    // Update document title
     document.title = "Marketplace";
   }, []);
 
-  const BuyMarketItem = async (item) => {
+  // This function handles the purchase of a market item.
+  const buyMarketItem = async (item) => {
     await (
       await marketplace.purchaseItem(item.itemId, { value: item.totalPrice })
     ).wait();
@@ -20,6 +24,7 @@ const Home = ({ marketplace, nft }) => {
     setItems(newItems);
   };
 
+  // If `loading` is true, render a loading spinner.
   if (loading)
     return (
       <main
@@ -40,13 +45,18 @@ const Home = ({ marketplace, nft }) => {
         <div className="px-5 container">
           <Row xs={1} md={2} lg={4} className="g-4 py-5">
             {items.map((item, idx) => (
-              <Col key={idx} className="overflow-hidden">
+              <Col key={idx} className="overflow-hidden" onClick={()=>{console.log(item)}}>
                 <Card style={{ backgroundColor: "black", border: "none" }}>
                   <Card.Img
                     variant="top"
                     src={item.image}
-                    style={{ borderRadius: "10px" }}
+                    style={{
+                      borderRadius: "10px",
+                      height: "200px",
+                      objectFit: "cover",
+                    }}
                   />
+
                   <Card.Body color="secondary">
                     <Card.Title>
                       {item.name}
@@ -64,7 +74,7 @@ const Home = ({ marketplace, nft }) => {
                   <Card.Footer style={{ padding: "0px" }}>
                     <div className="d-grid">
                       <Button
-                        onClick={() => BuyMarketItem(item)}
+                        onClick={() => buyMarketItem(item)}
                         variant="primary"
                         size="lg"
                         style={{ backgroundColor: "#34a343", border: "none" }}
@@ -88,4 +98,5 @@ const Home = ({ marketplace, nft }) => {
     </div>
   );
 };
-export default Home;
+
+export default Marketplace;

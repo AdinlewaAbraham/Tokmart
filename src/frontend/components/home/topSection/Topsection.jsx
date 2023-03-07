@@ -1,17 +1,17 @@
 import React from "react";
 import "./Topsection.css";
 
-import artdiff from "../../../img/artt.jpg";
-import artone from "../../../img/anshita-nair-0rxLLHD1XxA-unsplash.webp";
-import artthree from "../../../img/jonathan-borba-ipmc5-Z-uwQ-unsplash.jpg";
-import artfour from "../../../img/lucas-gouvea-aoEwuEH7YAs-unsplash.jpg";
-import artfive from "../../../img/8machine-_-9SS3n6hhMBY-unsplash.jpg";
-import artsix from "../../../img/art.jpg";
-import artseven from "../../../img/barbora-dostalova-yYuW_7uTOzY-unsplash.jpg";
+import artdiff from "../../../images/artt.jpg";
+import artone from "../../../images/anshita-nair-0rxLLHD1XxA-unsplash.webp";
+import artthree from "../../../images/jonathan-borba-ipmc5-Z-uwQ-unsplash.jpg";
+import artfour from "../../../images/lucas-gouvea-aoEwuEH7YAs-unsplash.jpg";
+import artfive from "../../../images/8machine-_-9SS3n6hhMBY-unsplash.jpg";
+import artsix from "../../../images/art.jpg";
+import artseven from "../../../images/barbora-dostalova-yYuW_7uTOzY-unsplash.jpg";
 
-import gifone from "../../../img/gif/giphy1.gif";
-import giftwo from "../../../img/gif/giphy (2).gif";
-import gifthree from "../../../img/gif/giphy (3).gif";
+import gifone from "../../../images/gif/giphy1.gif";
+import giftwo from "../../../images/gif/giphy (2).gif";
+import gifthree from "../../../images/gif/giphy (3).gif";
 import { useNavigate } from "react-router-dom";
 
 const NFTcard = (p) => {

@@ -55,11 +55,7 @@ function App() {
               <Route
                 path="/sold"
                 element={
-                  <Sold
-                    marketplace={marketplace}
-                    nft={nft}
-                    account={account}
-                  />
+                  <Sold marketplace={marketplace} nft={nft} account={account} />
                 }
               />
               <Route

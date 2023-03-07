@@ -6,50 +6,60 @@ import "../components/home/topSection/Topsection.css";
 import React from "react";
 
 const Listings = ({ marketplace, nft, account }) => {
+  // Set the document title to "Listings"
   useEffect(() => {
     document.title = "Listings";
   }, []);
-  const [error, seterror] = useState(false);
+
+  // State variables for error, listed items, price, loading, sold items, and show input
+  const [error, setError] = useState(false);
   const [listedItems, setListedItems] = useState([]);
-  const [price, setprice] = useState();
+  const [price, setPrice] = useState();
   const [loading, setLoading] = useState(true);
-  const [soldItems, setSoldItems] = useState([]);
-  const [showInput, setshowInput] = useState(false);
+  const [showInput, setShowInput] = useState(false);
+
+  // Load all the listed items for the current user
   const loadListedItems = async () => {
-    // Load all sold items that the user listed
+    // Get the total number of items
     const itemCount = await marketplace.itemCount();
     let listedItems = [];
-    let soldItems = [];
-    for (let indx = 1; indx <= itemCount; indx++) {
-      const i = await marketplace.items(indx);
-      if (i.seller.toLowerCase() === account) {
-        // get uri url from nft contract
-        const uri = await nft.tokenURI(i.tokenId);
-        // use uri to fetch the nft metadata stored on ipfs
+    // Loop through all the items
+    for (let index = 1; index <= itemCount; index++) {
+      const item = await marketplace.items(index);
+      // Check if the item was listed by the current user
+      if (item.seller.toLowerCase() === account) {
+        // Get the URI for the NFT
+        const uri = await nft.tokenURI(item.tokenId);
+        // Fetch the metadata for the NFT from IPFS using the URI
         const response = await fetch(uri);
         const metadata = await response.json();
-        // get total price of item (item price + fee)
-        const totalPrice = await marketplace.getTotalPrice(i.itemId);
-        // define listed item object
-        let item = {
+        // Get the total price of the item (item price + fee)
+        const totalPrice = await marketplace.getTotalPrice(item.itemId);
+        // Create a listed item object
+        let listedItem = {
           totalPrice,
-          price: i.price,
-          itemId: i.itemId,
+          price: item.price,
+          itemId: item.itemId,
           name: metadata.name,
           description: metadata.description,
           image: metadata.image,
-          sold: i.sold,
+          sold: item.sold,
         };
-        if (!i.sold) listedItems.push(item);
+        // If the item hasn't been sold yet, add it to the list of listed items
+        if (!item.sold) listedItems.push(listedItem);
       }
     }
+    // Update the state variables
     setLoading(false);
     setListedItems(listedItems);
-    setSoldItems(soldItems);
   };
+
+  // Load the listed items when the component mounts
   useEffect(() => {
     loadListedItems();
   }, []);
+
+  // Display a loading spinner if the component is still loading
   if (loading)
     return (
       <main
@@ -64,12 +74,17 @@ const Listings = ({ marketplace, nft, account }) => {
         <Loading />
       </main>
     );
+
+  // Update the price of a listed item
   const updatePrice = async (item) => {
+    // Check if the price is valid
     if (price == null || price <= 0) {
-      seterror(true);
+      setError(true);
       return null;
     }
+    // Give the marketplace contract permission to manage the user's NFTs
     await (await nft.setApprovalForAll(marketplace.address, true)).wait();
+    // Convert the listing price to wei and update the item's price
     const listingPrice = ethers.utils.parseEther(price.toString());
     await (await marketplace.updatePrice(item.itemId, listingPrice)).wait();
   };
@@ -85,6 +100,11 @@ const Listings = ({ marketplace, nft, account }) => {
                     className="artnftcardimg"
                     variant="top"
                     src={item.image}
+                    style={{
+                      borderRadius: "10px",
+                      height: "200px",
+                      objectFit: "cover",
+                    }}
                   />
                   <p style={{ fontSize: "20px" }}>
                     {item.name}{" "}
@@ -103,7 +123,7 @@ const Listings = ({ marketplace, nft, account }) => {
                     size="lg"
                     style={{ backgroundColor: "#34a343", border: "none" }}
                     onClick={() => {
-                      setshowInput(!showInput);
+                      setShowInput(!showInput);
                     }}
                   >
                     change price
@@ -117,7 +137,7 @@ const Listings = ({ marketplace, nft, account }) => {
                         value={price}
                         min={0}
                         onChange={(e) => {
-                          setprice(e.target.value);
+                          setPrice(e.target.value);
                         }}
                         className="my-1"
                       />

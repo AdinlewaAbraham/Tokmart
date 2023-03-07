@@ -4,28 +4,40 @@ import { Row, Col, Card, Form, Button } from "react-bootstrap";
 import Loading from "../components/loading/Loading";
 import usePurchasedItems from "../hooks/usePurchasedItems";
 
-export default function MyPurchases({ marketplace, nft, account }) {
+export default function Purchases({ marketplace, nft, account }) {
+  // Load the user's purchased items using a custom hook.
   const { loading, purchases } = usePurchasedItems({
     marketplace,
     nft,
     account,
   });
 
+  // Set the page title on initial load.
   useEffect(() => {
     document.title = "Purchases";
   }, []);
-  const [error, seterror] = useState(false);
-  const [price, setprice] = useState();
-  const [showRelist, setshowRelist] = useState(false);
-  const relist = async (item) => {
-    if (price == null || price <= 0) {
-      seterror(true);
+
+  // State variables for relisting items.
+  const [error, setError] = useState(false);
+  const [newPrice, setNewPrice] = useState();
+  const [showRelist, setShowRelist] = useState(false);
+
+  const relistItem = async (item) => {
+    if (newPrice == null || newPrice <= 0) {
+      setError(true);
       return null;
     }
+
+    // Set approval for the marketplace to manage the user's NFTs.
     await (await nft.setApprovalForAll(marketplace.address, true)).wait();
-    const listingPrice = ethers.utils.parseEther(price.toString());
+
+    // Convert the new price to Ether and relist the item on the marketplace.
+    const listingPrice = ethers.utils.parseEther(newPrice.toString());
     await (await marketplace.relistItem(item.itemId, listingPrice)).wait();
+
   };
+
+  // Render a loading spinner while the purchased items are loading.
   if (loading) {
     return (
       <main style={{ padding: "1rem 0" }}>
@@ -35,7 +47,8 @@ export default function MyPurchases({ marketplace, nft, account }) {
       </main>
     );
   }
-  console.log(purchases);
+
+  // Render the purchased items list once they are loaded.
   return (
     <div className="flex justify-center">
       {purchases.length > 0 ? (
@@ -43,12 +56,17 @@ export default function MyPurchases({ marketplace, nft, account }) {
           <Row xs={1} md={2} lg={4} className="g-4 py-5">
             {purchases.map((item, idx) => {
               return (
-                <Col key={idx} className="overflow-hidden">
+                <Col key={idx} className="overflow-hidden" onClick={()=>{console.log(item)}} >
                   <Card className="artnftcardtwo">
                     <Card.Img
                       className="artnftcardimg"
                       variant="top"
                       src={item.image}
+                      style={{
+                        borderRadius: "10px",
+                        height: "200px",
+                        objectFit: "cover",
+                      }}
                     />
                     <p style={{ fontSize: "20px" }}>
                       {item.name}
@@ -75,7 +93,7 @@ export default function MyPurchases({ marketplace, nft, account }) {
                             : "none",
                       }}
                       onClick={() => {
-                        setshowRelist(!showRelist);
+                        setShowRelist(!showRelist);
                       }}
                     >
                       relist
@@ -83,14 +101,14 @@ export default function MyPurchases({ marketplace, nft, account }) {
                     {showRelist && (
                       <>
                         <Form.Control
-                          value={price}
+                          value={newPrice}
                           size="lg"
                           placeholder="Enter new price"
                           type="number"
                           min={0}
                           onChange={(e) => {
-                            setprice(e.target.value);
-                            seterror(false);
+                            setNewPrice(e.target.value);
+                            setError(false);
                           }}
                           className="my-1"
                         />
@@ -103,7 +121,7 @@ export default function MyPurchases({ marketplace, nft, account }) {
                           style={{ backgroundColor: "#34a343", border: "none" }}
                           id={idx}
                           onClick={() => {
-                            relist(item);
+                            relistItem(item);
                           }}
                           type=""
                         >

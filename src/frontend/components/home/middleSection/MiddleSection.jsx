@@ -1,9 +1,9 @@
 import React from "react";
 import ImgCard from "./ImgCard";
-import MetaMaskIcon from "../../../img/icons/MetaMask_Fox.svg";
-import Mintimg from "../../../img/icons/nft-icon.svg";
-import Upload from "../../../img/icons/nftcollection.svg";
-import Happycustomer from "../../../img/icons/happy-svgrepo-com.svg";
+import MetaMaskIcon from "../../../images/icons/MetaMask_Fox.svg";
+import Mintimg from "../../../images/icons/nft-icon.svg";
+import Upload from "../../../images/icons/nftcollection.svg";
+import Happycustomer from "../../../images/icons/happy-svgrepo-com.svg";
 const middleSection = () => {
   const Desc = (p) => {
     return (

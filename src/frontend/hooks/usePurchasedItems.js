@@ -1,11 +1,13 @@
 import { useState, useEffect } from "react";
 
+
 const usePurchasedItems = ({ marketplace, nft, account }) => {
   const [loading, setLoading] = useState(true);
   const [purchases, setPurchases] = useState([]);
 
   useEffect(() => {
     const loadPurchasedItems = async () => {
+      // Query the marketplace contract to fetch all Bought events for the current account
       const filter = marketplace.filters.Bought(
         null,
         null,
@@ -14,9 +16,12 @@ const usePurchasedItems = ({ marketplace, nft, account }) => {
         null,
         account
       );
-      //check if sold
       const results = await marketplace.queryFilter(filter);
+
+      // Use a Set to ensure unique purchases and prevent duplicates
       const uniquePurchases = new Set();
+
+      // Loop through each Bought event to fetch the associated NFT metadata and other details
       await Promise.all(
         results.map(async (i) => {
           i = i.args;
@@ -26,7 +31,9 @@ const usePurchasedItems = ({ marketplace, nft, account }) => {
           const totalPrice = await marketplace.getTotalPrice(i.itemId);
           const itemSold = await marketplace.isItemSold(i.itemId);
           const owner = await marketplace.getItemOwner(i.itemId);
-          let purchasedItem = {
+
+          // Create a formatted purchased item object
+          const purchasedItem = {
             totalPrice,
             price: i.price,
             itemId: i.itemId,
@@ -36,9 +43,13 @@ const usePurchasedItems = ({ marketplace, nft, account }) => {
             itemSold,
             owner,
           };
+
+          // Add the purchased item object to the Set to ensure uniqueness
           uniquePurchases.add(JSON.stringify(purchasedItem));
         })
       );
+
+      // Convert the Set back to an array and remove duplicates
       const uniquePurchasesArray = removeDuplicates(
         Array.from(uniquePurchases).map((p) => JSON.parse(p))
       );
@@ -46,9 +57,12 @@ const usePurchasedItems = ({ marketplace, nft, account }) => {
       setLoading(false);
       setPurchases(uniquePurchasesArray);
     };
+
+    // Call the loadPurchasedItems function
     loadPurchasedItems();
   }, [marketplace, nft, account]);
 
+  // Function to remove duplicates from the purchases array
   const removeDuplicates = (arr) => {
     const seen = new Set();
     return arr.filter((item) => {
@@ -58,6 +72,7 @@ const usePurchasedItems = ({ marketplace, nft, account }) => {
     });
   };
 
+  // Return the loading and purchases variables
   return { loading, purchases };
 };
 
