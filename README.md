@@ -18,6 +18,13 @@ TokMart features a variety of features that make it the ultimate destination for
 
 # important 
 To use this project, you will need to have an Infura key stored in your .env file. If you don't have one already, you can easily create a free Infura account by visiting the Infura website and signing up. Once you have your Infura key, make sure to store it securely in your .env file. Please note that while Infura is free to use as long as you don't exceed your quota, you will be responsible for any fees if you go over the limits set by Infura.
+## Technology Stack & Tools
+- Solidity (Writing Smart Contract)
+- Javascript (React & Testing)
+- Ethers (Blockchain Interaction)
+- Hardhat (Development Framework)
+- Ipfs (Metadata storage)
+- React routers (Navigational components)
 ## Installation
 
 ### Clone the repository
