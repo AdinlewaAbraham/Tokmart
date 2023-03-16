@@ -17,6 +17,8 @@ const Listings = ({ marketplace, nft, account }) => {
   const [price, setPrice] = useState();
   const [loading, setLoading] = useState(true);
   const [showInput, setShowInput] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterValue, setFilterValue] = useState("");
 
   // Load all the listed items for the current user
   const loadListedItems = async () => {
@@ -57,7 +59,7 @@ const Listings = ({ marketplace, nft, account }) => {
   // Load the listed items when the component mounts
   useEffect(() => {
     loadListedItems();
-  }, []);
+  }, );
 
   // Display a loading spinner if the component is still loading
   if (loading)
@@ -92,73 +94,129 @@ const Listings = ({ marketplace, nft, account }) => {
     <div className="flex justify-center">
       {listedItems.length > 0 ? (
         <div className="px-5 py-3 container">
-          <Row xs={1} md={2} lg={4} className="g-4 py-3">
-            {listedItems.map((item, idx) => (
-              <Col key={idx} className="overflow-hidden">
-                <Card className="artnftcardtwo">
-                  <Card.Img
-                    className="artnftcardimg"
-                    variant="top"
-                    src={item.image}
-                    style={{
-                      borderRadius: "10px",
-                      height: "200px",
-                      objectFit: "cover",
-                    }}
-                  />
-                  <p style={{ fontSize: "20px" }}>
-                    {item.name}{" "}
-                    <span>
-                      {" "}
-                      #
-                      {ethers.utils.formatEther(item.itemId) * Math.pow(10, 18)}
-                    </span>
-                  </p>
-                  <p style={{ color: "grey" }}>{item.description}</p>
-                  <p style={{ color: "#6cf17e" }}>
-                    {ethers.utils.formatEther(item.totalPrice)} ETH
-                  </p>
-                  <Button
-                    variant="primary"
-                    size="lg"
-                    style={{ backgroundColor: "#34a343", border: "none" }}
-                    onClick={() => {
-                      setShowInput(!showInput);
-                    }}
-                  >
-                    change price
-                  </Button>
-                  {showInput && (
-                    <>
-                      <Form.Control
-                        placeholder="Enter new price"
-                        size="lg"
-                        type="number"
-                        value={price}
-                        min={0}
-                        onChange={(e) => {
-                          setPrice(e.target.value);
-                        }}
-                        className="my-1"
-                      />
-                      {error && (
-                        <p className="text-danger">price must be above 0</p>
-                      )}
-                      <Button
-                        variant="primary"
-                        size="lg"
-                        style={{ backgroundColor: "#34a343", border: "none" }}
-                        onClick={() => {
-                          updatePrice(item);
-                        }}
-                      >
-                        update price
-                      </Button>
-                    </>
-                  )}
-                </Card>
+          <Form className="py-3">
+            <Row className="align-items-center">
+              <Col sm={12} md={6}>
+                <Form.Control
+                  type="text"
+                  placeholder="Search by name or description"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
               </Col>
-            ))}
+              <Col sm={12} md={6}>
+                <Form.Select
+                  value={filterValue}
+                  onChange={(e) => setFilterValue(e.target.value)}
+                >
+                  <option value="">Filter by</option>
+                  <option value="price-low-to-high">Price: Low to High</option>
+                  <option value="price-high-to-low">Price: High to Low</option>
+                  <option value="date-newest-to-oldest">
+                    Date: Newest to Oldest
+                  </option>
+                  <option value="date-oldest-to-newest">
+                    Date: Oldest to Newest
+                  </option>
+                </Form.Select>
+              </Col>
+            </Row>
+          </Form>
+
+          <Row xs={1} md={2} lg={4} className="g-4 py-3">
+            {listedItems
+              .filter(
+                (item) =>
+                  item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                  item.description
+                    .toLowerCase()
+                    .includes(searchTerm.toLowerCase())
+              )
+              .sort((a, b) => {
+                const totalPriceA = ethers.utils.formatEther(a.totalPrice._hex);
+                const totalPriceB = ethers.utils.formatEther(b.totalPrice._hex);
+                const dateA = ethers.utils.formatEther(a.itemId._hex);
+                const dateB = ethers.utils.formatEther(b.itemId._hex);
+                switch (filterValue) {
+                  case "price-low-to-high":
+                    return totalPriceA - totalPriceB;
+                  case "price-high-to-low":
+                    return totalPriceB - totalPriceA;
+                  case "date-newest-to-oldest":
+                    return dateB - dateA;
+                  case "date-oldest-to-newest":
+                    return dateA - dateB;
+                  default:
+                    return 0;
+                }
+              })
+              .map((item, idx) => (
+                <Col key={idx} className="overflow-hidden">
+                  <Card className="artnftcardtwo">
+                    <Card.Img
+                      className="artnftcardimg"
+                      variant="top"
+                      src={item.image}
+                      style={{
+                        borderRadius: "10px",
+                        height: "200px",
+                        objectFit: "cover",
+                      }}
+                    />
+                    <p style={{ fontSize: "20px" }}>
+                      {item.name}{" "}
+                      <span>
+                        {" "}
+                        #
+                        {ethers.utils.formatEther(item.itemId) *
+                          Math.pow(10, 18)}
+                      </span>
+                    </p>
+                    <p style={{ color: "grey" }}>{item.description}</p>
+                    <p style={{ color: "#6cf17e" }}>
+                      {ethers.utils.formatEther(item.totalPrice)} ETH
+                    </p>
+                    <Button
+                      variant="primary"
+                      size="lg"
+                      style={{ backgroundColor: "#34a343", border: "none" }}
+                      onClick={() => {
+                        setShowInput(!showInput);
+                      }}
+                    >
+                      change price
+                    </Button>
+                    {showInput && (
+                      <>
+                        <Form.Control
+                          placeholder="Enter new price"
+                          size="lg"
+                          type="number"
+                          value={price}
+                          min={0}
+                          onChange={(e) => {
+                            setPrice(e.target.value);
+                          }}
+                          className="my-1"
+                        />
+                        {error && (
+                          <p className="text-danger">price must be above 0</p>
+                        )}
+                        <Button
+                          variant="primary"
+                          size="lg"
+                          style={{ backgroundColor: "#34a343", border: "none" }}
+                          onClick={() => {
+                            updatePrice(item);
+                          }}
+                        >
+                          update price
+                        </Button>
+                      </>
+                    )}
+                  </Card>
+                </Col>
+              ))}
           </Row>
         </div>
       ) : (

@@ -74,7 +74,7 @@ const usePurchasedItems = ({ marketplace, nft, account }) => {
   };
 
   // Return the loading and purchases variables
-  return { loading, purchases };
+  return { loading, purchases, setPurchases };
 };
 
 export default usePurchasedItems;
